@@ -1,0 +1,3 @@
+[submodule "extern/CryptoUtils"]
+	path = extern/CryptoUtils
+	url = https://github.com/ElectronicMeow/CryptoUtils

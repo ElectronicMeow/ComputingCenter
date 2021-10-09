@@ -1,0 +1,42 @@
+/generate-keys:
+  description: 生成主密钥，并生成新的公共参数。
+  get:
+    params:
+    success:
+      N:
+      k:
+      g:
+      msg: ok
+    error:
+      msg: <ERROR MESSAGE>
+
+
+/transform-to-same-pk:
+  description: 把所有的密文对都转换成具有相同公钥的密文对，然后返回给computing center, tag和pk需要记录下来。
+  post:
+    body:
+      data:
+        - [tag, C, D, pk]
+        - ...
+    success:
+      msg: ok
+      data:
+        - [tag, W, Z]
+        - ...
+    error:
+      msg: <ERROR MESSAGE>
+
+/tranform-back:
+  description: 把计算过后的单个结果密文对转换成所有client公钥加密的格式，然后返回给computing center，由computing center负责分发回去。
+  post:
+    body:
+      data:
+        C:
+        D:
+      success:
+        msg: ok
+        data:
+          - [tag, W, Z]
+          - ...
+      error:
+        msg: <ERROR MESSAGE>
