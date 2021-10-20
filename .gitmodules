@@ -1,3 +1,6 @@
-[submodule "extern/CryptoUtils"]
-	path = extern/CryptoUtils
+[submodule "3rdparty/qtpromise"]
+	path = 3rdparty/qtpromise
+	url = https://github.com/simonbrunel/qtpromise.git
+[submodule "src/utils"]
+	path = src/utils
 	url = https://github.com/ElectronicMeow/CryptoUtils
