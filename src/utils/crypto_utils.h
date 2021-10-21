@@ -236,6 +236,11 @@ namespace MeowCryptoUtils {
                                    const EncryptedPair &srcCiphertext,
                                    EncryptedPair &destCiphertext,
                                    QString &destRandSnip);
+
+    [[nodiscard]] EncryptedPair ccComputing(const PublicParameters &param,
+                                            const QString &prod_pk,
+                                            const QMap<QString, EncryptedPair> &enc_map,
+                                            const QMap<QString, QString> &r);
 }
 
 

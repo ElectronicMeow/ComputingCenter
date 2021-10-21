@@ -7,6 +7,7 @@
 
 #include "crypto_utils.h"
 
+#include <QMap>
 #include <gmp.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -454,5 +455,38 @@ namespace MeowCryptoUtils {
                                  mpz_get_str(nullptr, 16, rand_num))
                          + srcCiphertext;
         return true;
+    }
+
+    EncryptedPair ccComputing(const PublicParameters &param,
+                              const QString &prod_pk,
+                              const QMap<QString, EncryptedPair> &enc_map,
+                              const QMap<QString, QString> &r) {
+        EncryptedPair res;
+        res.setPublicKey(prod_pk);
+        res.setPublicN(param.N());
+
+        mpz_t tempA, tempB, temp1, temp2;
+        mpz_init_set_d(tempA, 1);
+        mpz_init_set_d(tempB, 1);
+        mpz_init(temp1);
+        mpz_init(temp2);
+        mpz_t N, N2;
+        mpz_init_set_str(N, param.N().toStdString().c_str(), 16);
+        mpz_init(N2);
+        mpz_mul(N2, N, N);
+
+        EncryptedPair temp;
+        for (auto &tag : enc_map.keys()) {
+            temp = enc_map[tag] + encrypt(param, prod_pk, "-"+r[tag]);
+            mpz_set_str(temp1, temp.A().toStdString().c_str(), 16);
+            mpz_set_str(temp2, temp.B().toStdString().c_str(), 16);
+            mpz_mul(temp1, tempA, temp1);
+            mpz_mod(tempA, temp1, N2);
+            mpz_mul(temp2, tempB, temp2);
+            mpz_mod(tempB, temp2, N2);
+        }
+        res.setA(mpz_get_str(nullptr, 16, tempA));
+        res.setB(mpz_get_str(nullptr, 16, tempB));
+        return res;
     }
 };

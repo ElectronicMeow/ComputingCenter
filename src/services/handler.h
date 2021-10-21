@@ -12,11 +12,22 @@
 class MainHandler : public HttpRequestHandler {
 private:
     HttpRequestRouter router_;
+    QString master_address_{};
+    QMap<QString, QString> clients_address_{};
+    QMap<QString, QString> pk_map_{};
 
 public:
     MainHandler();
 
     HttpPromise handle(HttpDataPtr data) override;
+
+    HttpPromise handleRegister(HttpDataPtr data);
+
+    HttpPromise handleRegisterMaster(HttpDataPtr data);
+
+    HttpPromise handleComputingRequest(HttpDataPtr data);
+
+    void clearData();
 };
 
 

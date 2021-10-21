@@ -39,7 +39,9 @@ set(HTTP_SRCS
 
 set(SERVICES_SRCS
         services/handler.cpp
-        services/handler.h)
+        services/handler.h
+        services/sync_request.cpp
+        services/sync_request.h)
 
 set(SRCS
         ${INITIALIZATIONS_SRCS}

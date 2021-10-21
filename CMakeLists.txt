@@ -11,9 +11,9 @@ project(MeowComputingCenter LANGUAGES CXX)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(QT_MIN_VERSION 5.6.0)
-find_package(Qt5 ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Network Sql)
+find_package(Qt5 ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Network)
 
-set(QT_LIBRARIES Qt5::Core Qt5::Network Qt5::Sql)
+set(QT_LIBRARIES Qt5::Core Qt5::Network)
 
 add_definitions(${QT_DEFINITIONS})
 
