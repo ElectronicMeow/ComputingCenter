@@ -90,6 +90,7 @@ HttpPromise MainHandler::handleComputingRequest(HttpDataPtr data) {
     }
 
     /// MAIN COMPUTING CONTROL FUNCTION
+    qWarning("==> SYNC COMPUTING STARTED <==");
     QNetworkAccessManager mgr;
 
     auto filter_data = jsonDocument.object().value("data").toObject();
@@ -99,6 +100,9 @@ HttpPromise MainHandler::handleComputingRequest(HttpDataPtr data) {
     public_param.setN(public_param_d["N"].toString());
     public_param.setK(public_param_d["k"].toString());
     public_param.setG(public_param_d["g"].toString());
+
+    qInfo("Got Master's PublicParam: N=%s, k=%s, g=%s", public_param_d["N"].toString().toStdString().c_str(),
+          public_param_d["k"].toString().toStdString().c_str(), public_param_d["g"].toString().toStdString().c_str());
 
     auto client_data_request_data = filter_data;
     client_data_request_data["N"] = public_param.N();
@@ -119,12 +123,21 @@ HttpPromise MainHandler::handleComputingRequest(HttpDataPtr data) {
         enc.setA(resp["encrypted_pair_a"].toString());
         enc.setB(resp["encrypted_pair_b"].toString());
         all_clients_data_map[client_tag] = enc;
+
+        qInfo("Got Client[%s]'s data: a=%s, b=%s, pk=%s",
+              client_tag.toStdString().c_str(),
+              resp["encrypted_pair_a"].toString().toStdString().c_str(),
+              resp["encrypted_pair_b"].toString().toStdString().c_str(),
+              pk.toStdString().c_str());
     }
 
     auto cc_prod_pk = MeowCryptoUtils::getProdKey(public_param, this->pk_map_.values());
+    qInfo("ProdPk=%s", cc_prod_pk.toStdString().c_str());
 
     QMap<QString, MeowCryptoUtils::EncryptedPair> all_clients_data_obfuscated_map;
     QMap<QString, QString> obfuscated_random_snips;
+
+    qInfo("Requesting Master to transform ciphers...");
 
     QJsonArray master_transform_request_data_arr;
 
@@ -155,6 +168,8 @@ HttpPromise MainHandler::handleComputingRequest(HttpDataPtr data) {
                                                           master_transform_request_data)).object()["data"].toArray();
 
     QMap<QString, MeowCryptoUtils::EncryptedPair> master_transformed_map;
+
+    qInfo("Master transform is over");
 
     for (auto i: master_transform_request_data) {
         auto arr = i.toArray();
@@ -205,15 +220,20 @@ HttpPromise MainHandler::handleComputingRequest(HttpDataPtr data) {
         master_transform_back_ciphertext[arr[0].toString()] = enc;
     }
 
-    QJsonObject final_result;
-    final_result["encrypted_pair_a"] = obfuscated_computed_res.A();
-    final_result["encrypted_pair_b"] = obfuscated_computed_res.B();
-    QJsonObject final_result_r;
-    final_result_r["data"] = final_result;
-
-    for (auto &i:this->pk_map_.keys()) {
-        sync_post(&mgr, this->clients_address_[i]+"/set-result", QJsonDocument(final_result_r));
+    for (auto &i: this->pk_map_.keys()) {
+        QJsonObject final_result;
+        final_result["encrypted_pair_a"] = master_transform_back_ciphertext[i].A();
+        final_result["encrypted_pair_b"] = master_transform_back_ciphertext[i].B();
+        qInfo("Computing Client[%s] Result: a=%s, b=%s",
+              i.toStdString().c_str(),
+              master_transform_back_ciphertext[i].A().toStdString().c_str(),
+              master_transform_back_ciphertext[i].B().toStdString().c_str());
+        QJsonObject final_result_r;
+        final_result_r["data"] = final_result;
+        sync_post(&mgr, this->clients_address_[i] + "/set-result", QJsonDocument(final_result_r));
     }
+
+    qWarning("==> SYNC COMPUTING ENDED <==");
 
     return HttpPromise::resolve(data);
 }
